@@ -318,6 +318,10 @@ if (EXISTS /usr/include)
     include_directories(/usr/include)  #For Ubuntu-like systems
 endif()
 
+if (EXISTS /usr/local/include)
+    include_directories(/usr/local/include)  #For Suse-like systems
+endif()
+
 # Detect SHTNS
 if(USE_SHTNS MATCHES yes)
    if(USE_OMP)
