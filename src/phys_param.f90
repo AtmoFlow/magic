@@ -38,6 +38,7 @@ module physical_parameters
    real(cp) :: radratio       ! aspect ratio
    real(cp) :: ra             ! Rayleigh number
    real(cp) :: raxi           ! Chemical composition-based Rayleigh number
+   real(cp) :: rae            ! Electric Rayleigh number
    real(cp) :: sc             ! Schmidt number (i.e. chemical Prandtl number)
    real(cp) :: ek             ! Ekman number
    real(cp) :: pr             ! Prandtl number

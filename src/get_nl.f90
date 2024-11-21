@@ -23,13 +23,13 @@ module grid_space_arrays_mod
    use radial_functions, only: or2, orho1, beta, otemp1, visc, r, or3, &
        &                       lambda, or4, or1
    use physical_parameters, only: LFfac, n_r_LCR, prec_angle, ViscHeatFac,    &
-        &                         oek, po, dilution_fac, ra, opr, OhmLossFac, &
+        &                         oek, po, dilution_fac, ra, rae, opr, OhmLossFac, &
         &                         epsPhase, phaseDiffFac, penaltyFac, tmelt
    use horizontal_data, only: sinTheta, cosTheta, phi, O_sin_theta_E2, &
        &                      cosn_theta_E2, O_sin_theta
    use parallel_mod, only: get_openmp_blocks
    use constants, only: two, third, one
-   use logic, only: l_conv_nl, l_heat_nl, l_mag_nl, l_anel, l_mag_LF, l_adv_curl, &
+   use logic, only: l_conv_nl, l_heat_nl, l_mag_nl, l_anel, l_mag_LF, l_ehd_dep, l_adv_curl, &
        &            l_chemical_conv, l_precession, l_centrifuge, l_phase_field
 
    implicit none
@@ -40,6 +40,7 @@ module grid_space_arrays_mod
       !----- Nonlinear terms in phi/theta space:
       real(cp), allocatable :: Advr(:,:), Advt(:,:), Advp(:,:)
       real(cp), allocatable :: LFr(:,:), LFt(:,:), LFp(:,:)
+      real(cp), allocatable :: DEPFr(:,:), DEPFt(:,:), DEPFp(:,:)
       real(cp), allocatable :: PCr(:,:), PCt(:,:), PCp(:,:)
       real(cp), allocatable :: CAr(:,:), CAt(:,:)
       real(cp), allocatable :: VxBr(:,:), VxBt(:,:), VxBp(:,:)
@@ -103,6 +104,15 @@ contains
          this%PCt(:,:)=0.0_cp
          allocate( this%PCp(nlat_padded,n_phi_max) )
          this%PCp(:,:)=0.0_cp
+         bytes_allocated=bytes_allocated + 3*n_phi_max*nlat_padded*SIZEOF_DEF_REAL
+      end if
+
+      if ( l_ehd_dep ) then
+         allocate( this%DEPFr(nlat_padded,n_phi_max), this%DEPFt(nlat_padded,n_phi_max) )
+         this%DEPFr(:,:)=0.0_cp
+         this%DEPFt(:,:)=0.0_cp
+         allocate( this%DEPFp(nlat_padded,n_phi_max) )
+         this%DEPFp(:,:)=0.0_cp
          bytes_allocated=bytes_allocated + 3*n_phi_max*nlat_padded*SIZEOF_DEF_REAL
       end if
 
@@ -256,6 +266,18 @@ contains
             &        this%cbrc(:,nPhi)*this%btc(:,nPhi) -    &
             &        this%cbtc(:,nPhi)*this%brc(:,nPhi) )
          end if      ! Lorentz force required ?
+
+         if ( l_ehd_dep .and. (nBc == 0 .or. lRmsCalc) .and. nR>n_r_LCR ) then
+            !------ Get the dielectrophoretic force:
+            !---- 
+            this%DEPFr(:,nPhi)=  rae * this%sc(:,nPhi) * or4(nR) * or1(nR)
+
+            !---- 
+            this%DEPFt(:,nPhi)=  one
+
+            !---- 
+            this%LFp(:,nPhi)=  one
+         end if      ! DEP force required ?
 
          if ( l_conv_nl .and. (nBc == 0 .or. lRmsCalc) ) then
 

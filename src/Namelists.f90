@@ -77,7 +77,7 @@ contains
       &    mpi_transp,l_adv_curl,mpi_packing
 
       namelist/phys_param/                                     &
-      &    ra,raxi,pr,sc,prmag,ek,epsc0,epscxi0,radratio,Bn,   &
+      &    ra,raxi,rae,pr,sc,prmag,ek,epsc0,epscxi0,radratio,Bn,   &
       &    ktops,kbots,ktopv,kbotv,ktopb,kbotb,kbotxi,ktopxi,  &
       &    s_top,s_bot,impS,sCMB,xi_top,xi_bot,impXi,xiCMB,    &
       &    nVarCond,con_DecRate,con_RadRatio,con_LambdaMatch,  &
@@ -320,6 +320,7 @@ contains
       l_mag_nl =.true.
       l_mag_kin=.false.
       l_mag_LF =.true.
+      l_ehd_dep=.true.
       l_heat   =.true.
       l_heat_nl=.true.
       l_SRIC   =.false.
@@ -431,7 +432,7 @@ contains
          l_chemical_conv = .false.
       end if
 
-      if ( ra == 0.0_cp ) l_heat=.false.
+      if ( ra == 0.0_cp .and. rae==0.0_cp ) l_heat=.false.
 
       if ( ek < 0.0_cp ) l_non_rot= .true.
       if ( l_non_rot ) then

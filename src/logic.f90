@@ -20,6 +20,7 @@ module logic
    logical :: l_mag_nl       ! Switch off non-linear magnetic terms calculation
    logical :: l_conv_nl      ! Switch off non-linear convection terms
    logical :: l_mag_LF       ! Switch off Lorentz force term
+   logical :: l_ehd_dep      ! Switch off dilectrophoretic force
    logical :: l_corr         ! Switch off rotation
    logical :: l_rot_ic       ! Switch off IC rotation
    logical :: l_rot_ma       ! Switch off OC rotation

@@ -14,7 +14,7 @@ module rIter_mod
    use parallel_mod
    use truncation, only: n_phi_max, lm_max, lm_maxMag
    use logic, only: l_mag, l_conv, l_mag_kin, l_heat, l_ht, l_anel,  &
-       &            l_mag_LF, l_conv_nl, l_mag_nl, l_b_nl_cmb,       &
+       &            l_mag_LF, l_ehd_dep, l_conv_nl, l_mag_nl, l_b_nl_cmb,       &
        &            l_b_nl_icb, l_rot_ic, l_cond_ic, l_rot_ma,       &
        &            l_cond_ma, l_dtB, l_store_frame, l_movie_oc,     &
        &            l_TO, l_chemical_conv, l_probe, l_full_sphere,   &
@@ -668,6 +668,10 @@ contains
                this%gsa%Advr(:,nPhi)=this%gsa%Advr(:,nPhi) + this%gsa%PCr(:,nPhi)
                this%gsa%Advt(:,nPhi)=this%gsa%Advt(:,nPhi) + this%gsa%PCt(:,nPhi)
                this%gsa%Advp(:,nPhi)=this%gsa%Advp(:,nPhi) + this%gsa%PCp(:,nPhi)
+            end if
+
+            if ( l_ehd_dep ) then
+               this%gsa%Advr(:, nPhi)=this%gsa%Advr(:,nPhi) + this%gsa%DEPFr(:,nPhi)
             end if
 
             if ( l_centrifuge ) then
