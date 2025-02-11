@@ -77,7 +77,7 @@ contains
       &    mpi_transp,l_adv_curl,mpi_packing
 
       namelist/phys_param/                                        &
-      &    ra,rae,raxi,pr,sc,prmag,ek,epsc0,epscxi0,radratio,Bn,      &
+      &    ra,rae,raxi,pr,sc,prmag,ek,gamma,epsc0,epscxi0,radratio,Bn,      &
       &    ktops,kbots,ktopv,kbotv,ktopb,kbotb,kbotxi,ktopxi,     &
       &    s_top,s_bot,impS,sCMB,xi_top,xi_bot,impXi,xiCMB,       &
       &    nVarCond,con_DecRate,con_RadRatio,con_LambdaMatch,     &
@@ -551,7 +551,7 @@ contains
       end if
 
       !-- If dilution factor is not zero, then centrifugal force on
-      if (dilution_fac == 0.0_cp) then
+      if (dilution_fac == 0.0_cp .and. (l_non_rot .or. gamma == 0.0_cp)) then
          l_centrifuge = .false.
       else
          l_centrifuge = .true.
@@ -574,7 +574,7 @@ contains
       end if
 
       if ( l_centrifuge .and. .not.  &
-      &    (l_anel .and. .not. l_isothermal .and. (index(interior_model, "NONE")/=0)) )  then
+      &    (l_anel .and. .not. l_isothermal .and. (index(interior_model, "NONE")/=0)) .and. gamma == 0.0_cp )  then
          call abortRun("This case is not implemented.")
          ! centrifugal acceleration implemented for anelastic polytropic background so far
       end if
@@ -934,6 +934,7 @@ contains
       write(n_out,'(''  sc              ='',ES14.6,'','')') sc
       write(n_out,'(''  prmag           ='',ES14.6,'','')') prmag
       write(n_out,'(''  ek              ='',ES14.6,'','')') ek
+      write(n_out,'(''  gamma           ='',ES14.6,'','')') gamma
       write(n_out,'(''  po              ='',ES14.6,'','')') po
       write(n_out,'(''  stef            ='',ES14.6,'','')') stef
       write(n_out,'(''  tmelt           ='',ES14.6,'','')') tmelt

@@ -23,7 +23,7 @@ module grid_space_arrays_mod
    use radial_functions, only: or2, orho1, beta, otemp1, visc, r, or3, &
        &                       lambda, or4, or1
    use physical_parameters, only: radratio, LFfac, n_r_LCR, prec_angle, ViscHeatFac,    &
-        &                         oek, po, dilution_fac, ra, rae, opr, OhmLossFac, &
+        &                         oek, po, dilution_fac, ra, rae, gamma, opr, OhmLossFac, &
         &                         epsPhase, phaseDiffFac, penaltyFac, tmelt
    use horizontal_data, only: sinTheta, cosTheta, phi, O_sin_theta_E2, &
        &                      cosn_theta_E2, O_sin_theta
@@ -369,7 +369,7 @@ contains
             &                 this%vrc(:,nPhi)*cosTheta(:))
          end if ! precession term required ?
 
-         if ( l_centrifuge .and. nBc ==0 ) then
+         if ( l_centrifuge .and. nBc == 0 .and. gamma == 0.0_cp) then
             !if ( l_anel ) then
             !   this%CAr(:,nPhi) = dilution_fac*r(nR)*sinTheta(:)**4* &
             !   &       ( -ra*opr*this%sc(:,nPhi) )
@@ -386,6 +386,13 @@ contains
             &                       this%sc(:,nPhi)
             !end if
          end if ! centrifuge
+
+         if (l_centrifuge .and. gamma > 0) then
+            ! ---- r^2 *          (-gamma) / Ek^2 * sin(theta)^2            * T
+            this%CAr(:,nPhi) =   -gamma * oek**2 *  r(nR)**3 * sinTheta(:)**2 * this%sc(:,nPhi)
+            ! ---- sin(theta)/r * (-gamma) / Ek^2 * sin(theta) * cos(theta) * T
+            this%CAt(:,nPhi) =   -gamma * oek**2             * sinTheta(:)**2 * cosTheta(:) *  this%sc(:,nPhi)
+         end if
 
          if ( l_mag_nl ) then
 
