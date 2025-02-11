@@ -413,7 +413,7 @@ contains
             botconduc = rho0(n_r_max)*kappa(n_r_max)*temp0(n_r_max)
          end if
 
-         if ( ktops == 1 .and. kbots == 1 ) then ! Fixed entropy
+         if ( ktops == 1 .and. kbots == 1 .and. ( tops(0,0) == 0.0_cp .and. bots(0,0) == 0.0_cp )) then ! Fixed entropy
 
             tops(0,0)=0.0_cp
             bots(0,0)=sq4pi

@@ -62,7 +62,7 @@ module init_fields
    real(cp), public :: amp_s1,amp_s2,amp_v1,amp_b1,amp_xi1,amp_xi2
 
    !----- Entropy at CMB and ICB (input):
-   integer, public, parameter :: n_s_bounds=20
+   integer, public, parameter :: n_s_bounds=100
    real(cp), public :: s_bot(4*n_s_bounds)  ! input variables for tops,bots
    real(cp), public :: s_top(4*n_s_bounds)
    complex(cp), public, allocatable :: tops(:,:)
