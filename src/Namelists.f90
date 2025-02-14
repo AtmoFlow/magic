@@ -77,7 +77,7 @@ contains
       &    mpi_transp,l_adv_curl,mpi_packing
 
       namelist/phys_param/                                        &
-      &    ra,rae,raxi,pr,sc,prmag,ek,gamma,epsc0,epscxi0,radratio,Bn,      &
+      &    ra,rae,rat,raxi,pr,sc,prmag,ek,gamma,epsc0,epscxi0,radratio,Bn,      &
       &    ktops,kbots,ktopv,kbotv,ktopb,kbotb,kbotxi,ktopxi,     &
       &    s_top,s_bot,impS,sCMB,xi_top,xi_bot,impXi,xiCMB,       &
       &    nVarCond,con_DecRate,con_RadRatio,con_LambdaMatch,     &
@@ -322,7 +322,9 @@ contains
       l_AB1    =.false.
       l_bridge_step=.true.
       l_onset  =.false.
-      l_ehd_dep=.true.
+      l_ehd_dep=.false.
+      l_ehd_die=.false.
+
 
       if ( mode == 1 ) then
          !-- Only convection:
@@ -428,6 +430,13 @@ contains
       end if
 
       if ( ra == 0.0_cp .and. rae == 0.0_cp ) l_heat=.false.
+
+      if ( rae > 0.0_cp ) then 
+         l_ehd_dep = .true.
+         if ( rat > 0.0_cp ) then
+            l_ehd_die = .true.
+         end if
+      end if
 
       if ( ek < 0.0_cp ) l_non_rot= .true.
       if ( l_non_rot ) then
@@ -929,6 +938,7 @@ contains
       write(n_out,*) "&phys_param"
       write(n_out,'(''  ra              ='',ES14.6,'','')') ra
       write(n_out,'(''  rae             ='',ES14.6,'','')') rae
+      write(n_out,'(''  rat             ='',ES14.6,'','')') rat
       write(n_out,'(''  raxi            ='',ES14.6,'','')') raxi
       write(n_out,'(''  pr              ='',ES14.6,'','')') pr
       write(n_out,'(''  sc              ='',ES14.6,'','')') sc
@@ -1373,6 +1383,8 @@ contains
 
       !----- Namelist phys_param:
       ra          =0.0_cp
+      rae         =0.0_cp
+      rat         =0.0_cp
       raxi        =0.0_cp
       ek          =1.0e-3_cp
       pr          =one

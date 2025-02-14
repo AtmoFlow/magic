@@ -21,7 +21,7 @@ module rIter_mod
        &            l_precession, l_centrifuge, l_adv_curl,          &
        &            l_double_curl, l_parallel_solve, l_single_matrix,&
        &            l_temperature_diff, l_RMS, l_phase_field,        &
-       &            l_onset, l_DTrMagSpec, l_ehd_dep
+       &            l_onset, l_DTrMagSpec, l_ehd_dep, l_ehd_die
    use radial_data, only: n_r_cmb, n_r_icb, nRstart, nRstop, nRstartMag, &
        &                  nRstopMag
    use radial_functions, only: or2, orho1, l_R
@@ -683,7 +683,7 @@ contains
          call spat_to_qst(this%gsa%VSr, this%gsa%VSt, this%gsa%VSp, &
               &           dVSrLM, this%nl_lm%VStLM, this%nl_lm%VSpLM, l_R(nR))
 
-         if ( l_anel ) call scal_to_SH(this%gsa%heatTerms, this%nl_lm%heatTermsLM, &
+         if ( l_anel .or. l_ehd_die ) call scal_to_SH(this%gsa%heatTerms, this%nl_lm%heatTermsLM, &
                             &          l_R(nR))
       end if
       if ( l_chemical_conv ) then

@@ -23,14 +23,14 @@ module grid_space_arrays_mod
    use radial_functions, only: or2, orho1, beta, otemp1, visc, r, or3, &
        &                       lambda, or4, or1
    use physical_parameters, only: radratio, LFfac, n_r_LCR, prec_angle, ViscHeatFac,    &
-        &                         oek, po, dilution_fac, ra, rae, gamma, opr, OhmLossFac, &
+        &                         oek, po, dilution_fac, ra, rae, rat, gamma, opr, OhmLossFac, &
         &                         epsPhase, phaseDiffFac, penaltyFac, tmelt
    use horizontal_data, only: sinTheta, cosTheta, phi, O_sin_theta_E2, &
        &                      cosn_theta_E2, O_sin_theta
    use parallel_mod, only: get_openmp_blocks
    use constants, only: two, third, one
    use logic, only: l_conv_nl, l_heat_nl, l_mag_nl, l_anel, l_mag_LF, l_adv_curl, &
-       &            l_chemical_conv, l_precession, l_centrifuge, l_phase_field, l_ehd_dep
+       &            l_chemical_conv, l_precession, l_centrifuge, l_phase_field, l_ehd_dep, l_ehd_die
 
    implicit none
 
@@ -456,6 +456,10 @@ contains
 
          end if  ! Viscous heating and Ohmic losses ?
 
+         if ( l_ehd_die ) then
+            this%heatTerms(:,nPhi)= &
+            &   rae/rat * radratio**2/(1.0D0-radratio)**4 * or4(nR)
+         end if
       end do
       !$omp end parallel
 
