@@ -11,7 +11,7 @@ module nonlinear_lm_mod
    use truncation, only: lm_max, lm_maxMag, m_min
    use logic, only : l_anel, l_conv_nl, l_corr, l_heat, l_anelastic_liquid, &
        &             l_mag_nl, l_mag_kin, l_mag_LF, l_conv, l_mag,          &
-       &             l_chemical_conv, l_single_matrix, l_double_curl
+       &             l_chemical_conv, l_single_matrix, l_double_curl, l_ehd_die
    use radial_functions, only: r, or2, or1, beta, epscProf, or4, temp0, orho1, l_R
    use physical_parameters, only: CorFac, epsc,  n_r_LCR, epscXi
    use blocking, only: lm2l, lm2lmA, lm2lmS
@@ -60,7 +60,7 @@ contains
       allocate( this%VxBrLM(lmP_max), this%VxBtLM(lmP_max), this%VxBpLM(lmP_max))
       bytes_allocated = bytes_allocated + 6*lmP_max*SIZEOF_DEF_COMPLEX
 
-      if ( l_anel) then
+      if ( l_anel .or. l_ehd_die ) then
          allocate( this%heatTermsLM(lmP_max) )
          bytes_allocated = bytes_allocated+lmP_max*SIZEOF_DEF_COMPLEX
       end if
@@ -120,7 +120,7 @@ contains
             this%VStLM(lm)=zero
             this%VSpLM(lm)=zero
          end if
-         if ( l_anel ) this%heatTermsLM(lm)=zero
+         if ( l_anel .or. l_ehd_die ) this%heatTermsLM(lm)=zero
          if ( l_chemical_conv ) then
             this%VXitLM(lm)=zero
             this%VXipLM(lm)=zero
@@ -478,7 +478,7 @@ contains
       if ( nBc == 0 ) then
 
          dsdt(1)=epsc*epscProf(nR)!+opr/epsS*divKtemp0(nR)
-         if ( l_anel ) then
+         if ( l_anel .or. l_ehd_die ) then
             if ( l_anelastic_liquid ) then
                dsdt(1)=dsdt(1)+temp0(nR)*this%heatTermsLM(1)
             else
@@ -486,7 +486,7 @@ contains
             end if
          end if
 
-         if ( l_anel ) then
+         if ( l_anel .or. l_ehd_die ) then
             if ( l_anelastic_liquid ) then
                !$omp parallel do
                do lm=lm_min,lm_max
