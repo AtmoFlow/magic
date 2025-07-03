@@ -86,7 +86,6 @@ module logic
 
    logical :: l_probe        ! Switch for artifical sensors
 
-   logical :: l_finite_diff ! Use finite differences for the radial scheme
    logical :: l_double_curl ! Use the double-curl of the NS equation to get the poloidal equation
    logical :: l_AB1  ! 1st order Adams Bashforth
    logical :: l_cour_alf_damp ! Modified Alfven Courant condition based on Christensen et al., GJI, 1999 (.true. by default)
@@ -98,8 +97,6 @@ module logic
    logical :: l_var_l ! When set to .true., degree varies with radius
    logical :: l_bridge_step ! Used to bridge missing steps when changing the time integrator
    logical :: l_packed_transp ! Pack or don't pack MPI transposes
-   logical :: l_parallel_solve ! Use R-distributed parallel solver (work only for F.D.)
-   logical :: l_mag_par_solve ! Can be remove once inner core has also been ported
    logical :: l_hemi ! Compute North/South asymmetry of energies
    logical :: l_onset ! A flag to turn MagIC into a linear stability analysis code
    logical :: l_scramble_theta ! A flag to set theta scrambling

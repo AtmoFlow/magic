@@ -19,7 +19,7 @@ module rIter_mod
        &            l_cond_ma, l_dtB, l_store_frame, l_movie_oc,     &
        &            l_TO, l_chemical_conv, l_probe, l_full_sphere,   &
        &            l_precession, l_centrifuge, l_adv_curl,          &
-       &            l_double_curl, l_parallel_solve, l_single_matrix,&
+       &            l_double_curl, l_single_matrix,&
        &            l_temperature_diff, l_RMS, l_phase_field,        &
        &            l_onset, l_DTrMagSpec, l_ehd_dep, l_ehd_die
    use radial_data, only: n_r_cmb, n_r_icb, nRstart, nRstop, nRstartMag, &
@@ -204,7 +204,7 @@ contains
             &       lPowerCalc .or. lGeosCalc .or. lHemiCalc
          end if
 
-         if ( l_parallel_solve .or. (l_single_matrix .and. l_temperature_diff) ) then
+         if ( (l_single_matrix .and. l_temperature_diff) ) then
             ! We will need the nonlinear terms on ricb for the pressure l=m=0
             ! equation
             lDeriv=.true.
