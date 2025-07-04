@@ -11,7 +11,7 @@ module updateV_mod
    use radial_data, only: n_r_icb, n_r_cmb, nRstart, nRstop
    use radial_functions, only: orho1, or1, or2, beta, rscheme_oc, r, l_R
    use num_param, only: dct_counter, solve_counter
-   use init_fields, only: tops, bots
+   use init_fields, only: tope, bote
    use blocking, only: lo_map, lo_sub_map, llm, ulm, st_map
    use horizontal_data, only: hdif_v
    use parallel_mod, only: rank, chunksize, n_procs, get_openmp_blocks
@@ -187,11 +187,11 @@ contains
             do lm=lmB0+1,min(iChunk*chunksize,sizeLMB2(nLMB2,nLMB))
                lm1=lm22lm(lm,nLMB2,nLMB)
                m1 =lm22m(lm,nLMB2,nLMB)
-
-               rhs1(1,2*lm-1,threadid)      = real(tops(l1,m1))
-               rhs1(1,2*lm,threadid)        =aimag(tops(l1,m1))
-               rhs1(n_r_max,2*lm-1,threadid)= real(bots(l1,m1))
-               rhs1(n_r_max,2*lm,threadid)  =aimag(bots(l1,m1))
+               
+               rhs1(1,2*lm-1,threadid)      = real(tope(l1,m1))
+               rhs1(1,2*lm,threadid)        =aimag(tope(l1,m1))
+               rhs1(n_r_max,2*lm-1,threadid)= real(bote(l1,m1))
+               rhs1(n_r_max,2*lm,threadid)  =aimag(bote(l1,m1))
 !               do nR=2,n_r_max-1
 !                  rhs1(nR,2*lm-1,threadid)= real(work_LMloc(lm1,nR))
 !                  rhs1(nR,2*lm,threadid)  =aimag(work_LMloc(lm1,nR))
@@ -337,8 +337,8 @@ contains
       !$omp single
       call dct_counter%start_count()
       !$omp end single
-      call get_ddr(v, dv, work_LMloc, ulm-llm+1,start_lm-llm+1,  &
-           &       stop_lm-llm+1,n_r_max, rscheme_oc, l_dct_in=.not. l_in_cheb)
+!      call get_ddr(v, dv, work_LMloc, ulm-llm+1,start_lm-llm+1,  &
+!           &       stop_lm-llm+1,n_r_max, rscheme_oc, l_dct_in=.not. l_in_cheb)
       if ( l_in_cheb ) call rscheme_oc%costf1(v,ulm-llm+1,start_lm-llm+1, &
                             &                 stop_lm-llm+1)
       !$omp barrier
@@ -346,27 +346,6 @@ contains
       call dct_counter%stop_count(l_increment=.false.)
       !$omp end single
 
-      if ( istage == 1 ) then
-         !$omp do
-         do n_r=1,n_r_max
-!            dvdt%old(:,n_r,istage) = v(:,n_r)
-         end do
-         !$omp end do
-      end if
-
-      if ( l_calc_lin ) then
-
-         !$omp do private(n_r,lm,l1,dL)
-         do n_r=1,n_r_max
-            do lm=llm,ulm
-               l1 = lm2l(lm)
-               dL = real(l1*(l1+1),cp)
-!               dvdt%impl(lm,n_r,istage)=   0 ! Please work here
-            end do
-         end do
-         !$omp end do
-
-      end if
 
       !$omp end parallel
 
@@ -457,6 +436,8 @@ contains
 
       !----- Boundary conditions:
       dat(1,:)=rscheme_oc%rnorm*rscheme_oc%rMat(1,:)
+      dat(n_r_max,:)=rscheme_oc%rnorm*rscheme_oc%rMat(n_r_max,:)
+
 
       if ( rscheme_oc%n_max < n_r_max ) then ! fill with zeros !
          do nR_out=rscheme_oc%n_max+1,n_r_max
