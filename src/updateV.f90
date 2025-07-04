@@ -192,10 +192,10 @@ contains
                rhs1(1,2*lm,threadid)        =aimag(tops(l1,m1))
                rhs1(n_r_max,2*lm-1,threadid)= real(bots(l1,m1))
                rhs1(n_r_max,2*lm,threadid)  =aimag(bots(l1,m1))
-               do nR=2,n_r_max-1
-                  rhs1(nR,2*lm-1,threadid)= real(work_LMloc(lm1,nR))
-                  rhs1(nR,2*lm,threadid)  =aimag(work_LMloc(lm1,nR))
-               end do
+!               do nR=2,n_r_max-1
+!                  rhs1(nR,2*lm-1,threadid)= real(work_LMloc(lm1,nR))
+!                  rhs1(nR,2*lm,threadid)  =aimag(work_LMloc(lm1,nR))
+!               end do
 
 #ifdef WITH_PRECOND_S
                rhs1(:,2*lm-1,threadid)=vMat_fac(:,nLMB2)*rhs1(:,2*lm-1,threadid)
@@ -252,9 +252,9 @@ contains
          call get_efield_rhs_imp(v, dv, 1, tscheme%l_imp_calc_rhs(1),  &
               &                l_in_cheb_space=.true.)
       else
-!         call get_efield_rhs_imp(v, dv, tscheme%istage+1,          &
-!              &                tscheme%l_imp_calc_rhs(tscheme%istage+1),  &
-!              &                l_in_cheb_space=.true.)
+         call get_efield_rhs_imp(v, dv, tscheme%istage+1,          &
+              &                tscheme%l_imp_calc_rhs(tscheme%istage+1),  &
+              &                l_in_cheb_space=.true.)
       end if
 
    end subroutine updateV
