@@ -30,7 +30,7 @@ module step_time_mod
        &            l_power, l_double_curl, l_PressGraph, l_probe,     &
        &            l_AB1, l_cond_ic, l_single_matrix,  &
        &            l_packed_transp, l_rot_ic, l_rot_ma, l_cond_ma,    &
-       &            l_phase_field,  &
+       &            l_phase_field, l_ehd_dep, &
        &            l_onset, l_geosMovie, l_phaseMovie, l_dtphaseMovie
    use init_fields, only: omega_ic1, omega_ma1
    use radialLoop, only: radialLoopG
@@ -848,7 +848,8 @@ contains
             if ( l_chemical_conv ) then
                call lo2r_one%transp_lm2r(xi_LMloc,xi_Rloc)
             end if
-            if ( l_phase_field ) then
+            if ( l_ehd_dep ) call lo2r_one%transp_lm2r(v_LMloc,v_Rloc)
+               if ( l_phase_field ) then
                call lo2r_one%transp_lm2r(phi_LMloc,phi_Rloc)
             end if
             if ( (l_conv .or. l_mag_kin) ) then
@@ -875,6 +876,7 @@ contains
                if ( lHTCalc ) call lo2r_one%transp_lm2r(ds_LMloc, ds_Rloc)
             end if
             if ( l_chemical_conv ) call lo2r_one%transp_lm2r(xi_LMloc,xi_Rloc)
+            if ( l_ehd_dep ) call lo2r_one%transp_lm2r(v_LMloc,v_Rloc)
             if ( l_phase_field ) call lo2r_one%transp_lm2r(phi_LMloc,phi_Rloc)
             if ( l_conv .or. l_mag_kin ) then
                call lo2r_flow%transp_lm2r(flow_LMloc_container,flow_Rloc_container)

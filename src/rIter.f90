@@ -47,7 +47,7 @@ module rIter_mod
    use fields, only: s_Rloc, ds_Rloc, z_Rloc, dz_Rloc, p_Rloc,    &
        &             b_Rloc, db_Rloc, ddb_Rloc, aj_Rloc,dj_Rloc,  &
        &             w_Rloc, dw_Rloc, ddw_Rloc, xi_Rloc, omega_ic,&
-       &             omega_ma, phi_Rloc
+       &             omega_ma, phi_Rloc, v_Rloc
    use time_schemes, only: type_tscheme
    use physical_parameters, only: ktops, kbots, n_r_LCR, ktopv, kbotv
    use rIteration, only: rIter_t
@@ -309,7 +309,7 @@ contains
 #else
             call graphOut(nR,this%gsa%vrc,this%gsa%vtc,this%gsa%vpc,     &
                  &        this%gsa%brc,this%gsa%btc,this%gsa%bpc,        &
-                 &        this%gsa%sc,this%gsa%pc,this%gsa%xic,          &
+                 &        this%gsa%vc,this%gsa%pc,this%gsa%xic,          &
                  &        this%gsa%phic)
 #endif
          end if
@@ -504,6 +504,8 @@ contains
 
          !-- Composition
          if ( l_chemical_conv ) call scal_to_spat(xi_Rloc(:,nR), this%gsa%xic, l_R(nR))
+
+         if (l_ehd_dep) call scal_to_spat(v_Rloc(:,nR), this%gsa%vc, l_R(nR))
 
          !-- Phase field
          if ( l_phase_field ) call scal_to_spat(phi_Rloc(:,nR), this%gsa%phic, l_R(nR))

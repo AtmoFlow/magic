@@ -15,9 +15,9 @@ module LMLoop_mod
    use blocking, only: lo_map, llm, ulm, llmMag, ulmMag, st_map
    use logic, only: l_mag, l_conv, l_heat, l_single_matrix, l_double_curl, &
        &            l_chemical_conv, l_cond_ic, l_onset, l_z10mat,         &
-       &            l_phase_field,      &
+       &            l_phase_field, l_ehd_dep,     &
        &            l_update_s, l_update_xi, l_update_phi, l_update_v,     &
-       &            l_update_b
+       &            l_update_b, l_update_ehd
    use time_array, only: type_tarray, type_tscalar
    use time_schemes, only: type_tscheme
    use timing, only: timer_type
@@ -27,6 +27,7 @@ module LMLoop_mod
    use updateWPS_mod
    use updateB_mod
    use updateXi_mod
+   use updateV_mod
    use updatePhi_mod
 
    implicit none
@@ -64,6 +65,8 @@ contains
 
       if ( l_chemical_conv ) call initialize_updateXi()
 
+      if (l_ehd_dep) call initialize_updatev
+
       if ( l_phase_field ) then
          call initialize_updatePhi()
       else
@@ -96,6 +99,9 @@ contains
       call finalize_updateZ()
 
       if ( l_chemical_conv ) call finalize_updateXi()
+
+      if ( l_ehd_dep ) call finalize_updateV()
+
       if ( l_phase_field ) then
          call finalize_updatePhi()
       else
@@ -164,6 +170,10 @@ contains
 
       if ( l_chemical_conv .and. l_update_xi ) then
          call updateXi(xi_LMloc, dxi_LMloc, dxidt, tscheme)
+      end if
+
+      if ( l_ehd_dep .and. l_update_ehd ) then
+         call updateV(v_LMloc, dv_LMloc, tscheme)
       end if
 
       if ( l_conv .and. l_update_v ) then

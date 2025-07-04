@@ -11,7 +11,7 @@ module fields
    use truncation, only: lm_max, n_r_max, lm_maxMag, n_r_maxMag, &
        &                 n_r_ic_maxMag, fd_order, fd_order_bound
    use logic, only: l_chemical_conv, l_mag, &
-       &            l_phase_field
+       &            l_phase_field, l_ehd_dep
    use blocking, only: llm, ulm, llmMag, ulmMag
    use radial_data, only: nRstart, nRstop, nRstartMag, nRstopMag
    use parallel_mod, only: rank
@@ -42,6 +42,12 @@ module fields
    complex(cp), public, allocatable, target :: xi_Rloc_container(:,:,:)
    complex(cp), public, pointer :: xi_LMloc(:,:), dxi_LMloc(:,:)
    complex(cp), public, pointer :: xi_Rloc(:,:), dxi_Rloc(:,:)
+
+   !-- Electric potential:
+   complex(cp), public, allocatable, target :: v_LMloc_container(:,:,:)
+   complex(cp), public, allocatable, target :: v_Rloc_container(:,:,:)
+   complex(cp), public, pointer :: v_LMloc(:,:), dv_LMloc(:,:)
+   complex(cp), public, pointer :: v_Rloc(:,:), dv_Rloc(:,:)
 
    !-- Phase field
    complex(cp), public, allocatable :: phi_LMloc(:,:), phi_Rloc(:,:)
@@ -201,6 +207,30 @@ contains
          dxi_Rloc(1:,1:)  => xi_Rloc_container(1:1,1:1,2)
       end if
 
+      !-- Electric potential:
+      if ( l_ehd_dep ) then
+         allocate( v_LMloc_container(llm:ulm,n_r_max,1:2) )
+         v_LMloc_container(:,:,:)=zero
+         v_LMloc(llm:,1:)  => v_LMloc_container(llm:ulm,1:n_r_max,1)
+         dv_LMloc(llm:,1:) => v_LMloc_container(llm:ulm,1:n_r_max,2)
+         allocate( v_Rloc_container(lm_max,nRstart:nRstop,1:2) )
+         v_Rloc_container(:,:,:)=zero
+         v_Rloc(1:,nRstart:)  => v_Rloc_container(1:lm_max,nRstart:nRstop,1)
+         dv_Rloc(1:,nRstart:) => v_Rloc_container(1:lm_max,nRstart:nRstop,2)
+         bytes_allocated = bytes_allocated + &
+                 &                 2*(ulm-llm+1)*n_r_max*SIZEOF_DEF_COMPLEX
+         bytes_allocated = bytes_allocated + &
+                 &                 2*lm_max*(nRstop-nRstart+1)*SIZEOF_DEF_COMPLEX
+      else
+         allocate( v_LMloc_container(1,1,2) ) ! For debugging
+         v_LMloc(1:,1:)  => v_LMloc_container(1:1,1:1,1)
+         dv_LMloc(1:,1:) => v_LMloc_container(1:1,1:1,2)
+         allocate( v_Rloc_container(1,1,2) )
+         v_Rloc(1:,1:)   => v_Rloc_container(1:1,1:1,1)
+         dv_Rloc(1:,1:)  => v_Rloc_container(1:1,1:1,2)
+      end if
+
+
       !-- Phase field
       if ( l_phase_field ) then
          allocate( phi_LMloc(llm:ulm,1:n_r_max) )
@@ -260,6 +290,7 @@ contains
       deallocate( b_ic_LMloc, db_ic_LMloc, ddb_ic_LMloc, aj_ic_LMloc )
       deallocate( dj_ic_LMloc, ddj_ic_LMloc )
       deallocate( xi_LMloc_container, xi_Rloc_container )
+      deallocate( v_LMloc_container, v_Rloc_container )
       deallocate( work_LMloc )
       deallocate( phi_LMloc, phi_Rloc )
       if (ampForce /= 0.0_cp) then

@@ -56,7 +56,7 @@ module grid_space_arrays_mod
       real(cp), allocatable :: dvtdpc(:,:), dvpdpc(:,:)
       real(cp), allocatable :: brc(:,:), btc(:,:), bpc(:,:)
       real(cp), allocatable :: cbrc(:,:), cbtc(:,:), cbpc(:,:)
-      real(cp), allocatable :: pc(:,:), xic(:,:), cvtc(:,:), cvpc(:,:)
+      real(cp), allocatable :: pc(:,:), xic(:,:), vc(:,:), cvtc(:,:), cvpc(:,:)
       real(cp), allocatable :: dsdtc(:,:), dsdpc(:,:), phic(:,:)
 
    contains
@@ -184,9 +184,10 @@ contains
       end if
 
       if ( l_ehd_dep ) then
-         allocate( this%DEPFr(nlat_padded,n_phi_max) )
+         allocate(this%vc(nlat_padded,n_phi_max), this%DEPFr(nlat_padded,n_phi_max) )
+         this%vc(:,:)=0.0_cp
          this%DEPFr(:,:)=0.0_cp
-         bytes_allocated=bytes_allocated + 1*n_phi_max*nlat_padded*SIZEOF_DEF_REAL
+         bytes_allocated=bytes_allocated + 2*n_phi_max*nlat_padded*SIZEOF_DEF_REAL
          end if
          
    end subroutine initialize

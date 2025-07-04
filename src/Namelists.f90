@@ -1329,6 +1329,7 @@ contains
       l_update_b    =.true.
       l_update_s    =.true.
       l_update_xi   =.true.
+      l_update_ehd   =.true.
       l_update_phi  =.true.
       l_correct_AMe =.false.  ! Correct equatorial AM
       l_correct_AMz =.false.  ! Correct axial AM
