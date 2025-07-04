@@ -11,6 +11,7 @@ module updateV_mod
    use radial_data, only: n_r_icb, n_r_cmb, nRstart, nRstop
    use radial_functions, only: orho1, or1, or2, beta, rscheme_oc, r, l_R
    use num_param, only: dct_counter, solve_counter
+   use init_fields, only: tops, bots
    use blocking, only: lo_map, lo_sub_map, llm, ulm, st_map
    use horizontal_data, only: hdif_v
    use parallel_mod, only: rank, chunksize, n_procs, get_openmp_blocks
@@ -183,20 +184,18 @@ contains
 #endif
             lmB0=(iChunk-1)*chunksize
 
-            rhs1(1,1,threadid)= 0
-            rhs1(n_r_max,1,threadid)= 1
             do lm=lmB0+1,min(iChunk*chunksize,sizeLMB2(nLMB2,nLMB))
                lm1=lm22lm(lm,nLMB2,nLMB)
                m1 =lm22m(lm,nLMB2,nLMB)
 
-!               rhs1(1,2*lm-1,threadid)      = real(topv(l1,m1))
-!               rhs1(1,2*lm,threadid)        =aimag(topv(l1,m1))
-!               rhs1(n_r_max,2*lm-1,threadid)= real(botv(l1,m1))
-!               rhs1(n_r_max,2*lm,threadid)  =aimag(botv(l1,m1))
-!               do nR=2,n_r_max-1
-!                  rhs1(nR,2*lm-1,threadid)= real(work_LMloc(lm1,nR))
-!                  rhs1(nR,2*lm,threadid)  =aimag(work_LMloc(lm1,nR))
-!               end do
+               rhs1(1,2*lm-1,threadid)      = real(tops(l1,m1))
+               rhs1(1,2*lm,threadid)        =aimag(tops(l1,m1))
+               rhs1(n_r_max,2*lm-1,threadid)= real(bots(l1,m1))
+               rhs1(n_r_max,2*lm,threadid)  =aimag(bots(l1,m1))
+               do nR=2,n_r_max-1
+                  rhs1(nR,2*lm-1,threadid)= real(work_LMloc(lm1,nR))
+                  rhs1(nR,2*lm,threadid)  =aimag(work_LMloc(lm1,nR))
+               end do
 
 #ifdef WITH_PRECOND_S
                rhs1(:,2*lm-1,threadid)=vMat_fac(:,nLMB2)*rhs1(:,2*lm-1,threadid)
@@ -248,15 +247,15 @@ contains
       !-- Roll the arrays before filling again the first block
 !      call tscheme%rotate_imex(dvdt)
 
-      !-- Calculation of the implicit part
-!      if ( tscheme%istage == tscheme%nstages ) then
-!         call get_efield_rhs_imp(v, dv, 1, tscheme%l_imp_calc_rhs(1),  &
-!              &                l_in_cheb_space=.true.)
-!      else
+!      -- Calculation of the implicit part
+      if ( tscheme%istage == tscheme%nstages ) then
+         call get_efield_rhs_imp(v, dv, 1, tscheme%l_imp_calc_rhs(1),  &
+              &                l_in_cheb_space=.true.)
+      else
 !         call get_efield_rhs_imp(v, dv, tscheme%istage+1,          &
 !              &                tscheme%l_imp_calc_rhs(tscheme%istage+1),  &
 !              &                l_in_cheb_space=.true.)
-!      end if
+      end if
 
    end subroutine updateV
 !------------------------------------------------------------------------------
