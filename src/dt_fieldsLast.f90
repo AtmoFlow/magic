@@ -11,7 +11,7 @@ module fieldsLast
    use blocking, only: llm, ulm, llmMag, ulmMag
    use logic, only: l_chemical_conv, l_heat, l_mag, l_cond_ic, l_double_curl, &
        &            l_RMS,  &
-       &            l_phase_field
+       &            l_phase_field, l_ehd_dep
    use constants, only: zero
    use radial_data, only: nRstart, nRstop, nRstartMag, nRstopMag
    use mem_alloc, only: bytes_allocated
@@ -34,7 +34,7 @@ module fieldsLast
    complex(cp), public, pointer :: dwdt_Rloc(:,:),dzdt_Rloc(:,:)
    complex(cp), public, pointer :: dpdt_Rloc(:,:), dsdt_Rloc(:,:), dVSrLM_Rloc(:,:)
    complex(cp), public, pointer :: dxidt_Rloc(:,:), dVXirLM_Rloc(:,:)
-   complex(cp), public, pointer :: dVxVhLM_Rloc(:,:)
+   complex(cp), public, pointer :: dVxVhLM_Rloc(:,:), Et_Rloc(:,:), Et_LMloc(:,:)
 
    !DIR$ ATTRIBUTES ALIGN:64 :: djdt_Rloc,dbdt_Rloc,dVxBhLM_Rloc
    complex(cp), public, pointer :: djdt_Rloc(:,:), dVxBhLM_Rloc(:,:)
@@ -144,6 +144,15 @@ contains
          dVXirLM_Rloc(1:,1:) => dxidt_Rloc_container(1:1,1:1,2)
       end if
 
+      if ( l_ehd_dep ) then
+         allocate( Et_Rloc(lm_max,nRstart:nRstop), Et_LMloc(lm_max,nRstart:nRstop) )
+         Et_Rloc(:,:)=zero
+         Et_LMloc(:,:)=zero
+         bytes_allocated = bytes_allocated+2*lm_max*(nRstop-nRstart+1)*SIZEOF_DEF_COMPLEX
+      else
+         allocate( Et_Rloc(1:1,1:1), Et_LMloc(1:1,1:1) )
+      end if
+
       if ( l_phase_field ) then
          allocate( dphidt_Rloc(lm_max,nRstart:nRstop) )
          dphidt_Rloc(:,:)=zero
@@ -228,7 +237,8 @@ contains
          deallocate( dxidt_Rloc_container, dxidt_LMloc_container )
       end if
 
-      if ( l_phase_field ) deallocate( dphidt_Rloc )
+         if ( l_ehd_dep ) deallocate( Et_Rloc, Et_LMloc )
+         if ( l_phase_field ) deallocate( dphidt_Rloc )
 
       call domega_ma_dt%finalize()
       call domega_ic_dt%finalize()

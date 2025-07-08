@@ -77,7 +77,7 @@ contains
       &    mpi_transp,l_adv_curl,mpi_packing
 
       namelist/phys_param/                                        &
-      &    ra,rae,rat,raxi,pr,sc,prmag,ek,gamma,epsc0,epscxi0,radratio,Bn,      &
+      &    ra,rae,rat,raxi,pr,sc,prmag,ek,gamma,gamma_e,epsc0,epscxi0,radratio,Bn,      &
       &    ktops,kbots,ktopv,kbotv,ktopb,kbotb,kbotxi,ktopxi,     &
       &    s_top,s_bot,impS,sCMB,xi_top,xi_bot,impXi,xiCMB,       &
       &    nVarCond,con_DecRate,con_RadRatio,con_LambdaMatch,     &
@@ -919,6 +919,7 @@ contains
       write(n_out,'(''  prmag           ='',ES14.6,'','')') prmag
       write(n_out,'(''  ek              ='',ES14.6,'','')') ek
       write(n_out,'(''  gamma           ='',ES14.6,'','')') gamma
+      write(n_out,'(''  gamma_e         ='',ES14.6,'','')') gamma_e
       write(n_out,'(''  po              ='',ES14.6,'','')') po
       write(n_out,'(''  stef            ='',ES14.6,'','')') stef
       write(n_out,'(''  tmelt           ='',ES14.6,'','')') tmelt

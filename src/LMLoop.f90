@@ -65,7 +65,7 @@ contains
 
       if ( l_chemical_conv ) call initialize_updateXi()
 
-      if (l_ehd_dep) call initialize_updatev
+      if (l_ehd_dep) call initialize_updatev()
 
       if ( l_phase_field ) then
          call initialize_updatePhi()
@@ -114,7 +114,7 @@ contains
    subroutine LMLoop(time,timeNext,tscheme,lMat,lRmsNext,lPressNext,     &
               &      dsdt,dwdt,dzdt,dpdt,dxidt,dphidt,dbdt,djdt,dbdt_ic, &
               &      djdt_ic,domega_ma_dt,domega_ic_dt,                  &
-              &      b_nl_cmb,aj_nl_cmb,aj_nl_icb)
+              &      b_nl_cmb,aj_nl_cmb,aj_nl_icb, Et_LMloc)
       !
       !  This subroutine performs the actual time-stepping. It calls succesively
       !  the update routines of the various fields.
@@ -130,6 +130,8 @@ contains
       complex(cp),         intent(in) :: b_nl_cmb(lm_max)   ! nonlinear bc for b at CMB
       complex(cp),         intent(in)  :: aj_nl_cmb(lm_max)  ! nonlinear bc for aj at CMB
       complex(cp),         intent(in)  :: aj_nl_icb(lm_max)  ! nonlinear bc for dr aj at ICB
+      complex(cp),         intent(inout) :: Et_LMloc(llm:ulm,n_r_max)
+
 
       !--- Input from radialLoop:
       type(type_tarray),  intent(inout) :: dsdt, dxidt, dwdt, dpdt, dzdt, dphidt
@@ -173,7 +175,7 @@ contains
       end if
 
       if ( l_ehd_dep .and. l_update_ehd ) then
-         call updateV(v_LMloc, dv_LMloc, tscheme)
+!         call updateV(v_LMloc, dv_LMloc, Et_LMloc, tscheme)
       end if
 
       if ( l_conv .and. l_update_v ) then

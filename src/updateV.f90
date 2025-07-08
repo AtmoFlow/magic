@@ -102,7 +102,7 @@ contains
 
    end subroutine finalize_updateV
 !------------------------------------------------------------------------------
-   subroutine updateV(v, dv, tscheme)
+   subroutine updateV(v, dv, Et_LMloc, tscheme)
       !
       !  Updates the chemical composition field s and its radial derivative.
       !
@@ -115,6 +115,8 @@ contains
 !      type(type_tarray), intent(inout) :: dvdt
       !-- Output: dv
       complex(cp),       intent(out) :: dv(llm:ulm,n_r_max) ! Radial derivative of v
+      complex(cp),       intent(in) :: Et_LMloc(llm:ulm,n_r_max) ! Radial derivative of v
+
 
       !-- Local variables:
       integer :: l1,m1          ! degree and order
@@ -192,10 +194,10 @@ contains
                rhs1(1,2*lm,threadid)        =aimag(tope(l1,m1))
                rhs1(n_r_max,2*lm-1,threadid)= real(bote(l1,m1))
                rhs1(n_r_max,2*lm,threadid)  =aimag(bote(l1,m1))
-!               do nR=2,n_r_max-1
-!                  rhs1(nR,2*lm-1,threadid)= real(work_LMloc(lm1,nR))
-!                  rhs1(nR,2*lm,threadid)  =aimag(work_LMloc(lm1,nR))
-!               end do
+               do nR=2,n_r_max-1
+                  rhs1(nR,2*lm-1,threadid)= real(Et_LMloc(lm1,nR))
+                  rhs1(nR,2*lm,threadid)  =aimag(Et_LMloc(lm1,nR))
+               end do
 
 #ifdef WITH_PRECOND_S
                rhs1(:,2*lm-1,threadid)=vMat_fac(:,nLMB2)*rhs1(:,2*lm-1,threadid)
@@ -337,8 +339,8 @@ contains
       !$omp single
       call dct_counter%start_count()
       !$omp end single
-!      call get_ddr(v, dv, work_LMloc, ulm-llm+1,start_lm-llm+1,  &
-!           &       stop_lm-llm+1,n_r_max, rscheme_oc, l_dct_in=.not. l_in_cheb)
+      call get_ddr(v, dv, work_LMloc, ulm-llm+1,start_lm-llm+1,  &
+           &       stop_lm-llm+1,n_r_max, rscheme_oc, l_dct_in=.not. l_in_cheb)
       if ( l_in_cheb ) call rscheme_oc%costf1(v,ulm-llm+1,start_lm-llm+1, &
                             &                 stop_lm-llm+1)
       !$omp barrier

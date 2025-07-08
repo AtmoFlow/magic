@@ -481,7 +481,7 @@ contains
                        &           lHemiCalc,lPhaseCalc,l_probe_out,dsdt_Rloc,        &
                        &           dwdt_Rloc,dzdt_Rloc,dpdt_Rloc,dxidt_Rloc,          &
                        &           dphidt_Rloc,dbdt_Rloc,djdt_Rloc,dVxVhLM_Rloc,      &
-                       &           dVxBhLM_Rloc,dVSrLM_Rloc,dVXirLM_Rloc,             &
+                       &           dVxBhLM_Rloc,dVSrLM_Rloc,dVXirLM_Rloc,Et_Rloc,     &
                        &           lorentz_torque_ic,lorentz_torque_ma,br_vt_lm_cmb,  &
                        &           br_vp_lm_cmb,br_vt_lm_icb,br_vp_lm_icb,dtrkc_Rloc, &
                        &           dthkc_Rloc)
@@ -643,7 +643,7 @@ contains
                call lmLoop_counter%start_count()
                   call LMLoop(timeStage,time,tscheme,lMat,lRmsNext,lPressNext,dsdt,  &
                        &      dwdt,dzdt,dpdt,dxidt,dphidt,dbdt,djdt,dbdt_ic,djdt_ic, &
-                       &      domega_ma_dt,domega_ic_dt,b_nl_cmb,aj_nl_cmb,aj_nl_icb)
+                       &      domega_ma_dt,domega_ic_dt,b_nl_cmb,aj_nl_cmb,aj_nl_icb, Et_LMloc)
 
                if ( lVerbose ) write(output_unit,*) '! lm-loop finished!'
 
@@ -839,44 +839,16 @@ contains
 
       call comm_counter%start_count()
       if ( l_packed_transp ) then
-         if ( l_Rloc ) then
-               call lo2r_flow%transp_lm2r(flow_LMloc_container, flow_Rloc_container)
-            if ( l_heat .and. lHTCalc ) then
-               call get_dr_Rloc(s_Rloc, ds_Rloc, lm_max, nRstart, nRstop, n_r_max, &
-                    &           rscheme_oc)
-            end if
-            if ( l_chemical_conv ) then
-               call lo2r_one%transp_lm2r(xi_LMloc,xi_Rloc)
-            end if
-            if ( l_ehd_dep ) call lo2r_one%transp_lm2r(v_LMloc,v_Rloc)
-               if ( l_phase_field ) then
-               call lo2r_one%transp_lm2r(phi_LMloc,phi_Rloc)
-            end if
-            if ( (l_conv .or. l_mag_kin) ) then
-               call get_ddr_Rloc(w_Rloc, dw_Rloc, ddw_Rloc, lm_max, nRstart, nRstop, &
-                    &            n_r_max, rscheme_oc)
-               call get_dr_Rloc(z_Rloc, dz_Rloc, lm_max, nRstart, nRstop, n_r_max, &
-                    &           rscheme_oc)
-            end if
-            if ( lPressCalc ) then
-               call lo2r_one%transp_lm2r(p_LMloc, p_Rloc)
-               call get_dr_Rloc(p_Rloc, dp_Rloc, lm_max, nRstart, nRstop, n_r_max, &
-                    &           rscheme_oc)
-            end if
-            if ( l_mag  ) then
-               call get_ddr_Rloc(b_Rloc, db_Rloc, ddb_Rloc, lm_max, nRstart, nRstop, &
-                    &            n_r_max, rscheme_oc)
-               call get_dr_Rloc(aj_Rloc, dj_Rloc, lm_max, nRstart, nRstop, n_r_max, &
-                    &           rscheme_oc)
-            end if
-         else
             if ( l_heat ) then
                !if ( .not. l_parallel_solve ) then
                call lo2r_one%transp_lm2r(s_LMloc, s_Rloc)
-               if ( lHTCalc ) call lo2r_one%transp_lm2r(ds_LMloc, ds_Rloc)
+               if ( lHTCalc .or. l_ehd_dep ) call lo2r_one%transp_lm2r(ds_LMloc, ds_Rloc)
             end if
             if ( l_chemical_conv ) call lo2r_one%transp_lm2r(xi_LMloc,xi_Rloc)
-            if ( l_ehd_dep ) call lo2r_one%transp_lm2r(v_LMloc,v_Rloc)
+            if ( l_ehd_dep ) then
+                call lo2r_one%transp_lm2r(v_LMloc,v_Rloc)
+                call lo2r_one%transp_lm2r(dv_LMloc, dv_Rloc)
+            end if
             if ( l_phase_field ) call lo2r_one%transp_lm2r(phi_LMloc,phi_Rloc)
             if ( l_conv .or. l_mag_kin ) then
                call lo2r_flow%transp_lm2r(flow_LMloc_container,flow_Rloc_container)
@@ -887,49 +859,16 @@ contains
             if ( l_mag ) then
                call lo2r_field%transp_lm2r(field_LMloc_container,field_Rloc_container)
             end if
-         end if
       else
-         if ( l_Rloc ) then
-            if ( l_heat  ) then
-               call lo2r_one%transp_lm2r(s_LMloc, s_Rloc)
-               if ( lHTCalc ) then
-                  call get_dr_Rloc(s_Rloc, ds_Rloc, lm_max, nRstart, nRstop, n_r_max, &
-                       &           rscheme_oc)
-               end if
-            end if
-            if ( l_chemical_conv  ) then
-               call lo2r_one%transp_lm2r(xi_LMloc,xi_Rloc)
-            end if
-            if ( l_phase_field  ) then
-               call lo2r_one%transp_lm2r(phi_LMloc,phi_Rloc)
-            end if
-            if ( (l_conv .or. l_mag_kin) ) then
-               call lo2r_one%transp_lm2r(w_LMloc, w_Rloc)
-               call get_ddr_Rloc(w_Rloc, dw_Rloc, ddw_Rloc, lm_max, nRstart, nRstop, &
-                    &            n_r_max, rscheme_oc)
-               call lo2r_one%transp_lm2r(z_LMloc, z_Rloc)
-               call get_dr_Rloc(z_Rloc, dz_Rloc, lm_max, nRstart, nRstop, n_r_max, &
-                    &           rscheme_oc)
-            end if
-            if ( lPressCalc ) then
-               call lo2r_one%transp_lm2r(p_LMloc, p_Rloc)
-               call get_dr_Rloc(p_Rloc, dp_Rloc, lm_max, nRstart, nRstop, n_r_max, &
-                    &           rscheme_oc)
-            end if
-            if ( l_mag  ) then
-               call lo2r_one%transp_lm2r(b_LMloc, b_Rloc)
-               call get_ddr_Rloc(b_Rloc, db_Rloc, ddb_Rloc, lm_max, nRstart, nRstop, &
-                    &            n_r_max, rscheme_oc)
-               call lo2r_one%transp_lm2r(aj_LMloc, aj_Rloc)
-               call get_dr_Rloc(aj_Rloc, dj_Rloc, lm_max, nRstart, nRstop, n_r_max, &
-                    &           rscheme_oc)
-            end if
-         else
             if ( l_heat ) then
                call lo2r_one%transp_lm2r(s_LMloc, s_Rloc)
-               if ( lHTCalc ) call lo2r_one%transp_lm2r(ds_LMloc, ds_Rloc)
+               if ( lHTCalc .or. l_ehd_dep ) call lo2r_one%transp_lm2r(ds_LMloc, ds_Rloc)
             end if
             if ( l_chemical_conv ) call lo2r_one%transp_lm2r(xi_LMloc,xi_Rloc)
+            if ( l_ehd_dep ) then
+                call lo2r_one%transp_lm2r(v_LMloc, v_Rloc)
+                call lo2r_one%transp_lm2r(dv_LMloc, dv_Rloc)
+            end if
             if ( l_phase_field ) call lo2r_one%transp_lm2r(phi_LMloc,phi_Rloc)
             if ( l_conv .or. l_mag_kin ) then
                call lo2r_one%transp_lm2r(w_LMloc, w_Rloc)
@@ -949,7 +888,6 @@ contains
                call lo2r_one%transp_lm2r(aj_LMloc, aj_Rloc)
                call lo2r_one%transp_lm2r(dj_LMloc, dj_Rloc)
             end if
-         end if
       end if
       call comm_counter%stop_count(l_increment=.false.)
 
@@ -972,21 +910,6 @@ contains
 
       call comm_counter%start_count()
       if ( l_packed_transp ) then
-         if ( lRloc ) then
-               call r2lo_flow%transp_r2lm(dflowdt_Rloc_container, &
-                    &                     dflowdt_LMloc_container(:,:,:,istage))
-            if ( (l_conv .or. l_mag_kin) ) then
-               if ( .not. l_double_curl .or. lPressNext ) then
-                  call r2lo_one%transp_r2lm(dpdt_Rloc,dpdt%expl(:,:,istage))
-               end if
-            end if
-            if ( l_chemical_conv ) then
-               call r2lo_one%transp_r2lm(dxidt_Rloc,dxidt%expl(:,:,istage))
-            end if
-            if ( l_phase_field ) then
-               call r2lo_one%transp_r2lm(dphidt_Rloc,dphidt%expl(:,:,istage))
-            end if
-         else
             if ( l_conv .or. l_mag_kin ) then
                call r2lo_flow%transp_r2lm(dflowdt_Rloc_container,  &
                     &                     dflowdt_LMloc_container(:,:,:,istage))
@@ -1000,6 +923,9 @@ contains
                call r2lo_xi%transp_r2lm(dxidt_Rloc_container, &
                     &                   dxidt_LMloc_container(:,:,:,istage))
             end if
+            if ( l_ehd_dep ) then
+                call r2lo_one%transp_r2lm(Et_Rloc,Et_LMloc(:,:))
+            end if
             if ( l_phase_field ) then
                call r2lo_one%transp_r2lm(dphidt_Rloc,dphidt%expl(:,:,istage))
             end if
@@ -1007,30 +933,7 @@ contains
                call r2lo_field%transp_r2lm(dbdt_Rloc_container, &
                     &                      dbdt_LMloc_container(:,:,:,istage))
             end if
-         end if
       else
-         if ( lRloc ) then
-            if ( (l_conv .or. l_mag_kin) ) then
-               call r2lo_one%transp_r2lm(dwdt_Rloc,dwdt%expl(:,:,istage))
-                  call r2lo_one%transp_r2lm(dzdt_Rloc,dzdt%expl(:,:,istage))
-               if ( (.not. l_double_curl .or. lPressNext) ) then
-                  call r2lo_one%transp_r2lm(dpdt_Rloc,dpdt%expl(:,:,istage))
-               end if
-            end if
-            if ( l_heat ) then
-               call r2lo_one%transp_r2lm(dsdt_Rloc,dsdt%expl(:,:,istage))
-            end if
-            if ( l_chemical_conv ) then
-               call r2lo_one%transp_r2lm(dxidt_Rloc,dxidt%expl(:,:,istage))
-            end if
-            if ( l_phase_field ) then
-               call r2lo_one%transp_r2lm(dphidt_Rloc,dphidt%expl(:,:,istage))
-            end if
-            if ( l_mag ) then
-               call r2lo_one%transp_r2lm(dbdt_Rloc,dbdt%expl(:,:,istage))
-               call r2lo_one%transp_r2lm(djdt_Rloc,djdt%expl(:,:,istage))
-            end if
-         else
             if ( l_conv .or. l_mag_kin ) then
                call r2lo_one%transp_r2lm(dwdt_Rloc,dwdt%expl(:,:,istage))
                call r2lo_one%transp_r2lm(dzdt_Rloc,dzdt%expl(:,:,istage))
@@ -1050,12 +953,14 @@ contains
             if ( l_phase_field ) then
                call r2lo_one%transp_r2lm(dphidt_Rloc,dphidt%expl(:,:,istage))
             end if
+            if ( l_ehd_dep ) then
+                call r2lo_one%transp_r2lm(Et_Rloc,Et_LMloc(:,:))
+            end if
             if ( l_mag ) then
                call r2lo_one%transp_r2lm(dbdt_Rloc,dbdt%expl(:,:,istage))
                call r2lo_one%transp_r2lm(djdt_Rloc,djdt%expl(:,:,istage))
                call r2lo_one%transp_r2lm(dVxBhLM_Rloc,dVxBhLM_LMloc(:,:,istage))
             end if
-         end if
       end if
       call comm_counter%stop_count()
 
