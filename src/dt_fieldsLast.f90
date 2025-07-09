@@ -35,6 +35,8 @@ module fieldsLast
    complex(cp), public, pointer :: dpdt_Rloc(:,:), dsdt_Rloc(:,:), dVSrLM_Rloc(:,:)
    complex(cp), public, pointer :: dxidt_Rloc(:,:), dVXirLM_Rloc(:,:)
    complex(cp), public, pointer :: dVxVhLM_Rloc(:,:), Et_Rloc(:,:), Et_LMloc(:,:)
+   complex(cp), public, allocatable, target  :: Et_Rloc_container(:,:)
+
 
    !DIR$ ATTRIBUTES ALIGN:64 :: djdt_Rloc,dbdt_Rloc,dVxBhLM_Rloc
    complex(cp), public, pointer :: djdt_Rloc(:,:), dVxBhLM_Rloc(:,:)
@@ -47,6 +49,8 @@ module fieldsLast
    complex(cp), public, allocatable, target  :: dbdt_LMloc_container(:,:,:,:)
    complex(cp), public, pointer :: dVSrLM_LMloc(:,:,:), dVXirLM_LMloc(:,:,:)
    complex(cp), public, pointer :: dVxVhLM_LMloc(:,:,:), dVxBhLM_LMloc(:,:,:)
+   complex(cp), public, allocatable, target  :: Et_LMloc_container(:,:)
+
 
    complex(cp), public, allocatable :: dbdt_CMB_LMloc(:)
 
@@ -145,12 +149,14 @@ contains
       end if
 
       if ( l_ehd_dep ) then
-         allocate( Et_Rloc(lm_max,nRstart:nRstop), Et_LMloc(lm_max,nRstart:nRstop) )
-         Et_Rloc(:,:)=zero
-         Et_LMloc(:,:)=zero
-         bytes_allocated = bytes_allocated+2*lm_max*(nRstop-nRstart+1)*SIZEOF_DEF_COMPLEX
+         allocate( Et_Rloc_container(lm_max,nRstart:nRstop) )
+         Et_Rloc_container(:,:)=zero
+         Et_Rloc(1:,nRstart:)   => Et_Rloc_container(1:lm_max,nRstart:nRstop)
+         bytes_allocated = bytes_allocated+ &
+                 &                 1*lm_max*(nRstop-nRstart+1)*SIZEOF_DEF_COMPLEX
       else
-         allocate( Et_Rloc(1:1,1:1), Et_LMloc(1:1,1:1) )
+         allocate( Et_Rloc_container(1,1) )
+         Et_Rloc(1:,1:)   => Et_Rloc_container(1:1,1:1)
       end if
 
       if ( l_phase_field ) then
@@ -210,6 +216,18 @@ contains
          dxidt_LMloc_container(:,:,:,:)=zero
          dxidt%expl(1:,1:,1:)   => dxidt_LMloc_container(1:1,1:1,1,1:nexp)
          dVXirLM_LMloc(1:,1:,1:) => dxidt_LMloc_container(1:1,1:1,2,1:nexp)
+      end if
+
+      if ( l_ehd_dep ) then
+         allocate(Et_LMloc_container(llm:ulm,n_r_max))
+         Et_LMloc_container(:,:)=zero
+         Et_LMloc(llm:,1:) => Et_LMloc_container(llm:ulm,1:n_r_max)
+         bytes_allocated = bytes_allocated+1*(ulm-llm+1)*n_r_max* &
+                 &                 SIZEOF_DEF_COMPLEX
+      else
+         allocate(Et_LMloc_container(1,1))
+         Et_LMloc_container(:,:)=zero
+         Et_LMloc(1:,1:) => Et_LMloc_container(1:1,1:1)
       end if
 
       if ( .not. l_phase_field ) allocate(dphidt%expl(1,1,1:nexp)) ! for debug

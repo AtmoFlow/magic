@@ -175,7 +175,7 @@ contains
       end if
 
       if ( l_ehd_dep .and. l_update_ehd ) then
-!         call updateV(v_LMloc, dv_LMloc, Et_LMloc, tscheme)
+        call updateV(v_LMloc, dv_LMloc, Et_LMloc, tscheme)
       end if
 
       if ( l_conv .and. l_update_v ) then

@@ -924,7 +924,7 @@ contains
                     &                   dxidt_LMloc_container(:,:,:,istage))
             end if
             if ( l_ehd_dep ) then
-                call r2lo_one%transp_r2lm(Et_Rloc,Et_LMloc(:,:))
+                call r2lo_one%transp_r2lm(Et_Rloc(:,:),Et_LMloc(:,:))
             end if
             if ( l_phase_field ) then
                call r2lo_one%transp_r2lm(dphidt_Rloc,dphidt%expl(:,:,istage))
@@ -954,7 +954,7 @@ contains
                call r2lo_one%transp_r2lm(dphidt_Rloc,dphidt%expl(:,:,istage))
             end if
             if ( l_ehd_dep ) then
-                call r2lo_one%transp_r2lm(Et_Rloc,Et_LMloc(:,:))
+                call r2lo_one%transp_r2lm(Et_Rloc(:,:),Et_LMloc(:,:))
             end if
             if ( l_mag ) then
                call r2lo_one%transp_r2lm(dbdt_Rloc,dbdt%expl(:,:,istage))
