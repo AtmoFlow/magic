@@ -281,26 +281,26 @@ contains
 
          if ( l_ehd_dep .and. (nBc == 0 .or. lRmsCalc) .and. nR>n_r_LCR ) then
             this%Et(:,nPhi) = gamma_e * ( &
-                    &             this%drSc(:,nPhi)  * this%dvdrc(:,nPhi) +  &
-                    &   or2(nR) * this%dsdtc(:,nPhi) * this%dvdtc(:,nPhi) +  &
-                    &   or2(nR) * O_sin_theta_E2(:) * this%dsdpc(:,nPhi) * this%dvdpc(:,nPhi)   &
+                    &            this%drSc(:,nPhi)  * this%dvdrc(:,nPhi)  &
+                    &  + or2(nR) * O_sin_theta_E2(:) * this%dsdtc(:,nPhi) * this%dvdtc(:,nPhi)   &
+                    &  + or2(nR) * O_sin_theta_E2(:) * this%dsdpc(:,nPhi) * this%dvdpc(:,nPhi)   &
                     ) / ( 1 - gamma_e * this%sc(:,nPhi))
             !------ Get the dielectrophoretic force:
-            this%DEPFr(:,nPhi)= r(nR)**2 * rae/4 * opr *             &
-                    & (                             this%dvdrc(:,nPhi)**2 +   &
-                    & or2(nR) * O_sin_theta_E2(:) * this%dvdtc(:,nPhi)**2 +   &
-                    & or2(nR) * O_sin_theta_E2(:) * this%dvdpc(:,nPhi)**2 ) * &
-                    & this%drSc(:,nPhi)
-            this%DEPFt(:,nPhi)=  or1(nR) * rae/4 * opr *&
-                    & (                             this%dvdrc(:,nPhi)**2 +   &
-                    & or2(nR) * O_sin_theta_E2(:) * this%dvdtc(:,nPhi)**2 +   &
-                    & or2(nR) * O_sin_theta_E2(:) * this%dvdpc(:,nPhi)**2 ) * &
-                    & or1(nR) * this%dsdtc(:,nPhi)
-            this%DEPFp(:,nPhi)=  or1(nR) * rae/4 * opr *&
-                    & (                             this%dvdrc(:,nPhi)**2 +   &
-                    & or2(nR) * O_sin_theta_E2(:) * this%dvdtc(:,nPhi)**2 +   &
-                    & or2(nR) * O_sin_theta_E2(:) * this%dvdpc(:,nPhi)**2 ) * &
-                    & or1(nR)  * this%dsdpc(:,nPhi)
+            this%DEPFr(:,nPhi)= r(nR)**2 * rae/4 * opr * (                       &
+                    &                                 this%dvdrc(:,nPhi)**2      &
+                    & + or2(nR) * O_sin_theta_E2(:) * this%dvdtc(:,nPhi)**2      &
+                    & + or2(nR) * O_sin_theta_E2(:) * this%dvdpc(:,nPhi)**2      &
+                    & ) * this%drSc(:,nPhi)
+            this%DEPFt(:,nPhi)=  or1(nR) * rae/4 * opr * (                       &
+                    &                                 this%dvdrc(:,nPhi)**2      &
+                    & + or2(nR) * O_sin_theta_E2(:) * this%dvdtc(:,nPhi)**2      &
+                    & + or2(nR) * O_sin_theta_E2(:) * this%dvdpc(:,nPhi)**2      &
+                    & ) * or1(nR) * this%dsdtc(:,nPhi)
+            this%DEPFp(:,nPhi)=  or1(nR) * rae/4 * opr * (                       &
+                    &                                 this%dvdrc(:,nPhi)**2      &
+                    & + or2(nR) * O_sin_theta_E2(:) * this%dvdtc(:,nPhi)**2      &
+                    & + or2(nR) * O_sin_theta_E2(:) * this%dvdpc(:,nPhi)**2      &
+                    & ) *  or1(nR)  * this%dsdpc(:,nPhi)
          end if      ! DEP force required ?
 
          if ( l_conv_nl .and. (nBc == 0 .or. lRmsCalc) ) then
