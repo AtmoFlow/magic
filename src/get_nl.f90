@@ -490,7 +490,11 @@ contains
 
          if ( l_ehd_die ) then
             this%heatTerms(:,nPhi)= &
-            &  opr * rae/rat * radratio**2/(1.0D0-radratio)**4 * or4(nR)
+            &  opr * rae/rat * (       &
+                    &                                 this%dvdrc(:,nPhi)**2      &
+                    & + or2(nR) * O_sin_theta_E2(:) * this%dvdtc(:,nPhi)**2      &
+                    & + or2(nR) * O_sin_theta_E2(:) * this%dvdpc(:,nPhi)**2      &
+                    & )
          end if
       end do
       !$omp end parallel
